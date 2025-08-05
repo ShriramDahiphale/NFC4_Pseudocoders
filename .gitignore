@@ -1,0 +1,52 @@
+# =========================
+# Root
+# =========================
+node_modules/
+.env
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Ignore build outputs
+dist/
+build/
+
+# Ignore OS-specific files
+Thumbs.db
+
+# Ignore IDE/editor settings
+.vscode/
+.idea/
+
+# =========================
+# Server (backend)
+# =========================
+/server/node_modules/
+/server/.env
+/server/dist
+/server/package-lock.json
+/server/yarn.lock
+
+# =========================
+# Client (frontend - React)
+# =========================
+/client/node_modules/
+/client/.env
+/client/build/
+/client/package-lock.json
+/client/yarn.lock
+
+# Ignore coverage reports (if using testing)
+coverage/
+
+# Ignore ESLint cache
+.eslintcache
+
+# Optional: Ignore uploads or temporary files
+uploads/
+temp/
+tmp/
