@@ -8,8 +8,18 @@ const draftSchema = new mongoose.Schema({
     },
     campaignId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Campaign',
-        required: true
+        ref: 'Campaign'
+    },
+    title: {
+        type: String,
+        maxlength: 100
+    },
+    targetAudience: {
+        type: String,
+        maxlength: 100
+    },
+    scheduledDate: {
+        type: Date
     },
     prompt: {
         type: String,
@@ -46,6 +56,10 @@ const draftSchema = new mongoose.Schema({
         type: String,
         enum: ['draft', 'reviewed'],
         default: 'draft'
+    },
+    posted: {
+        type: Boolean,
+        default: false
     },
     createdAt: {
         type: Date,
