@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const draftSchema = new mongoose.Schema({
-    userId: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -16,14 +16,31 @@ const draftSchema = new mongoose.Schema({
         required: [true, 'Prompt is required'],
         maxlength: 300
     },
+    tone: {
+        type: String,
+        enum: ['Witty', 'Professional', 'Inspirational', 'Storytelling', 'Educational'],
+        default: 'Professional'
+    },
+    platform: {
+        type: String,
+        enum: ['LinkedIn', 'Twitter', 'Instagram', 'Facebook'],
+        default: 'LinkedIn'
+    },
+    content: {
+        type: String,
+        maxlength: 1000
+    },
     aiOutput: {
         type: [String],
-        required: true,
-        validate: [v => Array.isArray(v) && v.length > 0, 'At least one AI output is required']
+        default: []
     },
     finalVersion: {
         type: String,
         maxlength: 1000
+    },
+    reviewed: {
+        type: Boolean,
+        default: false
     },
     status: {
         type: String,

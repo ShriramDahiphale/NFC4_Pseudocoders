@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import './cron/generateScheduledDrafts.js';
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -9,6 +10,7 @@ import campaignRoutes from './routes/campaignRoutes.js';
 import draftRoutes from './routes/draftRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js';
 import templateRoutes from './routes/templateRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 dotenv.config();
 
@@ -39,6 +41,7 @@ app.use('/api/campaigns', campaignRoutes);
 app.use('/api/drafts', draftRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/ai', aiRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

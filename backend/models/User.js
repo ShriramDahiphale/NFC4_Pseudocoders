@@ -47,6 +47,9 @@ const userSchema = new mongoose.Schema({
     toneProfileSummary: {
         type: String,
         maxlength: 300
+    }, generationSchedule: {
+        type: String,
+        default: null
     },
     createdAt: {
         type: Date,
