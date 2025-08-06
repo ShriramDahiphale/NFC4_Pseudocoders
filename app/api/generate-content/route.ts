@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { type NextRequest, NextResponse } from "next/server"
+import dotenv from "dotenv"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+// Load environment variables from .env file
+dotenv.config()
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDI11N8SSnWGuprtVXvxeylaIVg5qySN-U")
 
 interface ChatMemory {
   messages: Array<{
@@ -144,9 +148,8 @@ Please ask them to provide specific details for the placeholders, making it conv
 ${contextMessages ? `Context from previous conversation:\n${contextMessages}\n\n` : ""}
 
 Platform Guidelines for ${platform}:
-${
-  platform === "LinkedIn"
-    ? `
+${platform === "LinkedIn"
+        ? `
 - Professional tone with personal insights
 - Use emojis sparingly and professionally (2-3 max)
 - Include relevant hashtags (3-5 at the end)
@@ -156,7 +159,7 @@ ${
 - Focus on thought leadership, industry insights, or professional experiences
 - Structure with clear paragraphs and bullet points when appropriate
 `
-    : `
+        : `
 - Conversational and engaging tone
 - Use emojis naturally but not excessively
 - Keep under 280 characters for single tweets
@@ -165,7 +168,7 @@ ${
 - Be concise and punchy
 - Create threads for longer content if needed
 `
-}
+      }
 
 IMPORTANT: Generate exactly 2 different post variations for the user to choose from. Each should have a distinctly different angle or approach while addressing the same core topic.
 
@@ -178,7 +181,7 @@ FORMATTING INSTRUCTIONS:
 6. If the user provided specific examples or experiences, use them authentically
 7. ${isRegenerate ? `This is a regeneration request - create fresh, alternative content with different angles while maintaining the same core message.` : ""}
 
-Create exactly 2 engaging, authentic content variations that feel personal and valuable. Make sure they have different approaches - for example, one could be more personal/story-driven while the other is more analytical/data-driven.`
+Create exactly 1 engaging, authentic content variations that feel personal and valuable. Make sure they have different approaches - for example, one could be more personal/story-driven while the other is more analytical/data-driven.`
 
     const fullPrompt = `${systemPrompt}\n\nUser Request: ${prompt}\n\nGenerate exactly 2 different ${platform} post variations:`
 

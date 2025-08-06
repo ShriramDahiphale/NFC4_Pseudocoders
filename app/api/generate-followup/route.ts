@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { type NextRequest, NextResponse } from "next/server"
+import dotenv from "dotenv"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
+// Load environment variables from .env file
+dotenv.config()
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDI11N8SSnWGuprtVXvxeylaIVg5qySN-U")
 
 export async function POST(request: NextRequest) {
   try {

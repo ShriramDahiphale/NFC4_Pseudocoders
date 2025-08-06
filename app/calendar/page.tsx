@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, ArrowLeft, ArrowRight, LinkedinIcon, Twitter, Clock, Edit, Trash2, AlertTriangle } from "lucide-react"
+import { Plus, ArrowLeft, ArrowRight, LinkedinIcon, Twitter, Clock, Trash2, AlertTriangle, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import ReactMarkdown from "react-markdown"
 
 interface ScheduledPost {
   id: string
@@ -19,14 +20,13 @@ interface ScheduledPost {
   platform: "LinkedIn" | "Twitter/X"
   scheduledDate: string
   scheduledTime: string
-  status: "scheduled" | "published" | "failed"
+  status: "scheduled" | "published" | "failed" | "posted"
   type: string
 }
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([])
-  const [editingPost, setEditingPost] = useState<ScheduledPost | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false)
   const [selectedPost, setSelectedPost] = useState<ScheduledPost | null>(null)
@@ -95,30 +95,15 @@ export default function CalendarPage() {
     })
   }
 
-  const handleUpdatePost = () => {
-    if (!editingPost) return
-
-    setScheduledPosts((prev) => prev.map((post) => (post.id === editingPost.id ? editingPost : post)))
-
-    // Update localStorage
-    const updatedPosts = scheduledPosts.map((post) => (post.id === editingPost.id ? editingPost : post))
-    localStorage.setItem("scheduledPosts", JSON.stringify(updatedPosts))
-
-    setEditingPost(null)
-    setIsDialogOpen(false)
-  }
-
   const handleSchedulePost = () => {
     const post: ScheduledPost = {
       id: Date.now().toString(),
       ...newPost,
       status: "scheduled",
     }
-    setScheduledPosts((prev) => [...prev, post])
-
-    // Save to localStorage
-    const existingPosts = JSON.parse(localStorage.getItem("scheduledPosts") || "[]")
-    localStorage.setItem("scheduledPosts", JSON.stringify([...existingPosts, post]))
+    const updatedPosts = [...scheduledPosts, post]
+    setScheduledPosts(updatedPosts)
+    localStorage.setItem("scheduledPosts", JSON.stringify(updatedPosts))
 
     setNewPost({
       title: "",
@@ -132,10 +117,16 @@ export default function CalendarPage() {
   }
 
   const deletePost = (id: string) => {
-    setScheduledPosts((prev) => prev.filter((post) => post.id !== id))
-
-    // Update localStorage
     const updatedPosts = scheduledPosts.filter((post) => post.id !== id)
+    setScheduledPosts(updatedPosts)
+    localStorage.setItem("scheduledPosts", JSON.stringify(updatedPosts))
+  }
+
+  const markAsPosted = (id: string) => {
+    const updatedPosts = scheduledPosts.map(post =>
+      post.id === id ? { ...post, status: "posted" } : post
+    )
+    setScheduledPosts(updatedPosts)
     localStorage.setItem("scheduledPosts", JSON.stringify(updatedPosts))
   }
 
@@ -147,67 +138,57 @@ export default function CalendarPage() {
   useEffect(() => {
     const savedPosts = localStorage.getItem("scheduledPosts")
     if (savedPosts) {
-      setScheduledPosts(JSON.parse(savedPosts))
+      try {
+        setScheduledPosts(JSON.parse(savedPosts))
+      } catch (e) {
+        console.error("Failed to parse saved posts", e)
+      }
     }
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-orange-200/60 sticky top-0 z-50">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Dashboard
+                <Button variant="ghost" size="sm" className="hover:bg-orange-50">
+                  <ArrowLeft className="mr-2 h-4 w-4 text-amber-900" />
+                  <span className="text-amber-900">Back to Dashboard</span>
                 </Button>
               </Link>
-              <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-xl font-semibold">Content Calendar</h1>
+              <div className="h-6 w-px bg-orange-200" />
+              <h1 className="text-xl font-semibold text-amber-900">Content Calendar</h1>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl">
                   <Plus className="mr-2 h-4 w-4" />
                   Schedule Post
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl border-orange-200">
                 <DialogHeader>
-                  <DialogTitle>{editingPost ? "Edit Scheduled Post" : "Schedule New Post"}</DialogTitle>
+                  <DialogTitle className="text-amber-900">Schedule New Post</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="title">Post Title</Label>
-                      <Input
-                        id="title"
-                        value={editingPost ? editingPost.title : newPost.title}
-                        onChange={(e) => {
-                          if (editingPost) {
-                            setEditingPost((prev) => (prev ? { ...prev, title: e.target.value } : null))
-                          } else {
-                            setNewPost((prev) => ({ ...prev, title: e.target.value }))
-                          }
-                        }}
-                        placeholder="Enter post title"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="platform">Platform</Label>
+                      <Label htmlFor="platform" className="text-amber-800">
+                        Platform
+                      </Label>
                       <Select
-                        value={editingPost ? editingPost.platform : newPost.platform}
-                        onValueChange={(value: any) => {
-                          if (editingPost) {
-                            setEditingPost((prev) => (prev ? { ...prev, platform: value } : null))
-                          } else {
-                            setNewPost((prev) => ({ ...prev, platform: value }))
-                          }
-                        }}
+                        value={newPost.platform}
+                        onValueChange={(value) =>
+                          setNewPost({
+                            ...newPost,
+                            platform: value as "LinkedIn" | "Twitter/X",
+                          })
+                        }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="border-orange-200">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -216,91 +197,105 @@ export default function CalendarPage() {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="type" className="text-amber-800">
+                        Type
+                      </Label>
+                      <Input
+                        id="type"
+                        value={newPost.type}
+                        onChange={(e) =>
+                          setNewPost({
+                            ...newPost,
+                            type: e.target.value,
+                          })
+                        }
+                        className="border-orange-200"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="content">Content</Label>
-                    <Textarea
-                      id="content"
-                      value={editingPost ? editingPost.content : newPost.content}
-                      onChange={(e) => {
-                        if (editingPost) {
-                          setEditingPost((prev) => (prev ? { ...prev, content: e.target.value } : null))
-                        } else {
-                          setNewPost((prev) => ({ ...prev, content: e.target.value }))
-                        }
-                      }}
-                      placeholder="Enter your post content"
-                      rows={6}
+                    <Label htmlFor="title" className="text-amber-800">
+                      Title
+                    </Label>
+                    <Input
+                      id="title"
+                      value={newPost.title}
+                      onChange={(e) =>
+                        setNewPost({
+                          ...newPost,
+                          title: e.target.value,
+                        })
+                      }
+                      className="border-orange-200"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="content" className="text-amber-800">
+                      Content
+                    </Label>
+                    <Textarea
+                      id="content"
+                      value={newPost.content}
+                      onChange={(e) =>
+                        setNewPost({
+                          ...newPost,
+                          content: e.target.value,
+                        })
+                      }
+                      rows={8}
+                      className="border-orange-200 font-mono text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="type">Content Type</Label>
-                      <Select
-                        value={editingPost ? editingPost.type : newPost.type}
-                        onValueChange={(value) => {
-                          if (editingPost) {
-                            setEditingPost((prev) => (prev ? { ...prev, type: value } : null))
-                          } else {
-                            setNewPost((prev) => ({ ...prev, type: value }))
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Thought Leadership">Thought Leadership</SelectItem>
-                          <SelectItem value="Personal Story">Personal Story</SelectItem>
-                          <SelectItem value="Industry News">Industry News</SelectItem>
-                          <SelectItem value="Tips & Advice">Tips & Advice</SelectItem>
-                          <SelectItem value="Company Update">Company Update</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="date">Date</Label>
+                      <Label htmlFor="date" className="text-amber-800">
+                        Date
+                      </Label>
                       <Input
                         id="date"
                         type="date"
-                        value={editingPost ? editingPost.scheduledDate : newPost.scheduledDate}
-                        onChange={(e) => {
-                          if (editingPost) {
-                            setEditingPost((prev) => (prev ? { ...prev, scheduledDate: e.target.value } : null))
-                          } else {
-                            setNewPost((prev) => ({ ...prev, scheduledDate: e.target.value }))
-                          }
-                        }}
+                        value={newPost.scheduledDate}
+                        onChange={(e) =>
+                          setNewPost({
+                            ...newPost,
+                            scheduledDate: e.target.value,
+                          })
+                        }
+                        className="border-orange-200"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="time">Time</Label>
+                      <Label htmlFor="time" className="text-amber-800">
+                        Time
+                      </Label>
                       <Input
                         id="time"
                         type="time"
-                        value={editingPost ? editingPost.scheduledTime : newPost.scheduledTime}
-                        onChange={(e) => {
-                          if (editingPost) {
-                            setEditingPost((prev) => (prev ? { ...prev, scheduledTime: e.target.value } : null))
-                          } else {
-                            setNewPost((prev) => ({ ...prev, scheduledTime: e.target.value }))
-                          }
-                        }}
+                        value={newPost.scheduledTime}
+                        onChange={(e) =>
+                          setNewPost({
+                            ...newPost,
+                            scheduledTime: e.target.value,
+                          })
+                        }
+                        className="border-orange-200"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-2 pt-4">
+                  <div className="flex justify-end space-x-2">
                     <Button
                       variant="outline"
-                      onClick={() => {
-                        setIsDialogOpen(false)
-                        setEditingPost(null)
-                      }}
+                      onClick={() => setIsDialogOpen(false)}
+                      className="border-orange-200 hover:bg-orange-50"
                     >
                       Cancel
                     </Button>
-                    <Button onClick={editingPost ? handleUpdatePost : handleSchedulePost}>
-                      {editingPost ? "Update Post" : "Schedule Post"}
+                    <Button
+                      onClick={handleSchedulePost}
+                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                    >
+                      Schedule Post
                     </Button>
                   </div>
                 </div>
@@ -314,37 +309,51 @@ export default function CalendarPage() {
         {/* Calendar Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
-              <ArrowLeft className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth("prev")}
+              className="border-orange-200 hover:bg-orange-50"
+            >
+              <ArrowLeft className="h-4 w-4 text-amber-900" />
             </Button>
-            <h2 className="text-2xl font-bold">{formatDate(currentDate)}</h2>
-            <Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
-              <ArrowRight className="h-4 w-4" />
+            <h2 className="text-2xl font-bold text-amber-900">{formatDate(currentDate)}</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth("next")}
+              className="border-orange-200 hover:bg-orange-50"
+            >
+              <ArrowRight className="h-4 w-4 text-amber-900" />
             </Button>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <div className="flex items-center space-x-2 text-sm text-amber-800">
+              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
               <span>LinkedIn</span>
             </div>
-            <div className="flex items-center space-x-2 text-sm">
-              <div className="w-3 h-3 bg-sky-400 rounded-full"></div>
+            <div className="flex items-center space-x-2 text-sm text-amber-800">
+              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
               <span>Twitter/X</span>
             </div>
-            <div className="flex items-center space-x-2 text-sm">
+            <div className="flex items-center space-x-2 text-sm text-amber-800">
               <div className="w-3 h-3 bg-red-500 rounded-full"></div>
               <span>Overdue</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-amber-800">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span>Posted</span>
             </div>
           </div>
         </div>
 
         {/* Calendar Grid */}
-        <Card className="border-0 shadow-sm">
+        <Card className="border-0 shadow-sm bg-white/60 backdrop-blur-sm border-orange-200/30">
           <CardContent className="p-0">
             {/* Days of Week Header */}
-            <div className="grid grid-cols-7 border-b">
+            <div className="grid grid-cols-7 border-b border-orange-200">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className="p-4 text-center font-medium text-gray-600 border-r last:border-r-0">
+                <div key={day} className="p-4 text-center font-medium text-amber-700 border-r border-orange-200 last:border-r-0">
                   {day}
                 </div>
               ))}
@@ -354,7 +363,7 @@ export default function CalendarPage() {
             <div className="grid grid-cols-7">
               {/* Empty days for month start */}
               {emptyDays.map((_, index) => (
-                <div key={`empty-${index}`} className="h-32 border-r border-b last:border-r-0"></div>
+                <div key={`empty-${index}`} className="h-32 border-r border-b border-orange-200 last:border-r-0"></div>
               ))}
 
               {/* Days with content */}
@@ -367,36 +376,39 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={day}
-                    className={`h-32 border-r border-b last:border-r-0 p-2 ${isToday ? "bg-purple-50" : ""}`}
+                    className={`h-32 border-r border-b border-orange-200 last:border-r-0 p-2 ${isToday ? "bg-orange-50" : ""}`}
                   >
-                    <div className={`text-sm font-medium mb-2 ${isToday ? "text-purple-600" : "text-gray-900"}`}>
+                    <div className={`text-sm font-medium mb-2 ${isToday ? "text-orange-600" : "text-amber-900"}`}>
                       {day}
                     </div>
                     <div className="space-y-1">
                       {postsForDay.slice(0, 2).map((post) => {
                         const isOverdue = isPostOverdue(post)
+                        const isPosted = post.status === "posted"
                         return (
                           <div
                             key={post.id}
-                            className={`text-xs p-1 rounded truncate cursor-pointer flex items-center space-x-1 ${
-                              isOverdue
+                            className={`text-xs p-1 rounded truncate cursor-pointer flex items-center space-x-1 ${isPosted
+                              ? "bg-green-100 text-green-800 hover:bg-green-200"
+                              : isOverdue
                                 ? "bg-red-100 text-red-800 hover:bg-red-200"
                                 : post.platform === "LinkedIn"
-                                  ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                  : "bg-sky-100 text-sky-800 hover:bg-sky-200"
-                            }`}
+                                  ? "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                                  : "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                              }`}
                             title={post.title}
                             onClick={() => {
                               setSelectedPost(post)
                               setIsEventDialogOpen(true)
                             }}
                           >
-                            {isOverdue && <AlertTriangle className="h-3 w-3 flex-shrink-0" />}
-                            {post.platform === "LinkedIn" ? (
-                              <LinkedinIcon className="h-3 w-3 flex-shrink-0" />
-                            ) : (
-                              <Twitter className="h-3 w-3 flex-shrink-0" />
-                            )}
+                            {isPosted && <CheckCircle className="h-3 w-3 flex-shrink-0 text-green-600" />}
+                            {isOverdue && !isPosted && <AlertTriangle className="h-3 w-3 flex-shrink-0 text-red-500" />}
+                            {!isPosted && post.platform === "LinkedIn" ? (
+                              <LinkedinIcon className="h-3 w-3 flex-shrink-0 text-orange-600" />
+                            ) : !isPosted ? (
+                              <Twitter className="h-3 w-3 flex-shrink-0 text-amber-600" />
+                            ) : null}
                             <span className="truncate">
                               {post.scheduledTime} - {post.title}
                             </span>
@@ -404,7 +416,7 @@ export default function CalendarPage() {
                         )
                       })}
                       {postsForDay.length > 2 && (
-                        <div className="text-xs text-gray-500 text-center">+{postsForDay.length - 2} more</div>
+                        <div className="text-xs text-amber-600 text-center">+{postsForDay.length - 2} more</div>
                       )}
                     </div>
                   </div>
@@ -416,9 +428,9 @@ export default function CalendarPage() {
 
         {/* Upcoming Posts List */}
         <div className="mt-8">
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-sm bg-white/60 backdrop-blur-sm border-orange-200/30">
             <CardHeader>
-              <CardTitle>Upcoming Posts</CardTitle>
+              <CardTitle className="text-amber-900">Upcoming Posts</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -431,49 +443,91 @@ export default function CalendarPage() {
                   .slice(0, 10)
                   .map((post) => {
                     const isOverdue = isPostOverdue(post)
+                    const isPosted = post.status === "posted"
+
                     return (
                       <div
                         key={post.id}
-                        className={`flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 ${
-                          isOverdue ? "border-red-200 bg-red-50" : ""
-                        }`}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${isPosted
+                          ? "border-green-200 bg-green-50/80"
+                          : isOverdue
+                            ? "border-red-200 bg-red-50/80"
+                            : "border-orange-200 hover:bg-orange-50/50"
+                          }`}
                       >
                         <div className="flex items-center space-x-4">
                           <div className="flex items-center space-x-2">
-                            {isOverdue && <AlertTriangle className="h-5 w-5 text-red-500" />}
+                            {isPosted && <CheckCircle className="h-5 w-5 text-green-500" />}
+                            {isOverdue && !isPosted && <AlertTriangle className="h-5 w-5 text-red-500" />}
                             {post.platform === "LinkedIn" ? (
-                              <LinkedinIcon className="h-5 w-5 text-blue-600" />
+                              <LinkedinIcon className="h-5 w-5 text-orange-600" />
                             ) : (
-                              <Twitter className="h-5 w-5 text-sky-400" />
+                              <Twitter className="h-5 w-5 text-amber-500" />
                             )}
-                            <Badge variant={isOverdue ? "destructive" : "secondary"}>{post.type}</Badge>
+                            <Badge
+                              variant={
+                                isPosted
+                                  ? "default"
+                                  : isOverdue
+                                    ? "destructive"
+                                    : "secondary"
+                              }
+                              className={
+                                isPosted
+                                  ? "bg-green-100 text-green-800"
+                                  : !isOverdue
+                                    ? "bg-amber-100 text-amber-800"
+                                    : ""
+                              }
+                            >
+                              {post.type}
+                            </Badge>
                           </div>
                           <div>
-                            <h3 className="font-medium">{post.title}</h3>
-                            <p className="text-sm text-gray-600 truncate max-w-md">{post.content}</p>
-                            <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
-                              <Clock className="h-3 w-3" />
-                              <span>{new Date(`${post.scheduledDate} ${post.scheduledTime}`).toLocaleString()}</span>
-                              <span className={isOverdue ? "text-red-500 font-medium" : "text-blue-500"}>
-                                ({getTimeLeft(post)})
+                            <h3 className="font-medium text-amber-900">{post.title}</h3>
+                            <p className="text-sm text-amber-700 truncate max-w-md">{post.content}</p>
+                            <div className="flex items-center space-x-2 mt-1 text-xs">
+                              <Clock className="h-3 w-3 text-amber-600" />
+                              <span className="text-amber-600">
+                                {new Date(`${post.scheduledDate} ${post.scheduledTime}`).toLocaleString()}
                               </span>
+                              {!isPosted && (
+                                <span className={isOverdue ? "text-red-500 font-medium" : "text-orange-500"}>
+                                  ({getTimeLeft(post)})
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditingPost(post)
-                              setIsDialogOpen(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => deletePost(post.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {!isPosted ? (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => markAsPosted(post.id)}
+                                className="bg-green-500 hover:bg-green-600 text-white"
+                              >
+                                Posted
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => deletePost(post.id)}
+                                className="border-orange-200 hover:bg-orange-50"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deletePost(post.id)}
+                              className="border-orange-200 hover:bg-orange-50"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     )
@@ -486,51 +540,69 @@ export default function CalendarPage() {
 
       {/* Event Details Dialog */}
       <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl border-orange-200">
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 text-amber-900">
               {selectedPost && (
                 <>
-                  {isPostOverdue(selectedPost) && <AlertTriangle className="h-5 w-5 text-red-500" />}
-                  {selectedPost.platform === "LinkedIn" ? (
-                    <LinkedinIcon className="h-5 w-5 text-blue-600" />
-                  ) : (
-                    <Twitter className="h-5 w-5 text-sky-400" />
+                  {selectedPost.status === "posted" && <CheckCircle className="h-5 w-5 text-green-500" />}
+                  {isPostOverdue(selectedPost) && selectedPost.status !== "posted" && (
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
                   )}
-                  <span>{selectedPost.title}</span>
+                  {selectedPost.platform === "LinkedIn" ? (
+                    <LinkedinIcon className="h-5 w-5 text-orange-600" />
+                  ) : (
+                    <Twitter className="h-5 w-5 text-amber-500" />
+                  )}
+                  <div className="inline">
+                    <ReactMarkdown>{selectedPost.title}</ReactMarkdown>
+                  </div>
                 </>
               )}
-            </DialogTitle>
+            </div>
           </DialogHeader>
           {selectedPost && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Platform</Label>
+                  <Label className="text-amber-800">Platform</Label>
                   <div className="flex items-center space-x-2">
                     {selectedPost.platform === "LinkedIn" ? (
-                      <LinkedinIcon className="h-4 w-4 text-blue-600" />
+                      <LinkedinIcon className="h-4 w-4 text-orange-600" />
                     ) : (
-                      <Twitter className="h-4 w-4 text-sky-400" />
+                      <Twitter className="h-4 w-4 text-amber-500" />
                     )}
-                    <span>{selectedPost.platform}</span>
+                    <span className="text-amber-900">{selectedPost.platform}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Time Left</Label>
-                  <div className={`font-medium ${isPostOverdue(selectedPost) ? "text-red-500" : "text-blue-500"}`}>
-                    {getTimeLeft(selectedPost)}
+                  <Label className="text-amber-800">Status</Label>
+                  <div className={`font-medium ${selectedPost.status === "posted"
+                    ? "text-green-500"
+                    : isPostOverdue(selectedPost)
+                      ? "text-red-500"
+                      : "text-orange-500"
+                    }`}>
+                    {selectedPost.status === "posted"
+                      ? "Posted"
+                      : isPostOverdue(selectedPost)
+                        ? "Overdue"
+                        : "Scheduled"}
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Scheduled Time</Label>
-                <p>{new Date(`${selectedPost.scheduledDate} ${selectedPost.scheduledTime}`).toLocaleString()}</p>
+                <Label className="text-amber-800">Scheduled Time</Label>
+                <p className="text-amber-900">
+                  {new Date(`${selectedPost.scheduledDate} ${selectedPost.scheduledTime}`).toLocaleString()}
+                </p>
               </div>
               <div className="space-y-2">
-                <Label>Content</Label>
-                <div className="p-3 bg-gray-50 rounded-lg border max-h-60 overflow-y-auto">
-                  <p className="whitespace-pre-wrap text-sm">{selectedPost.content}</p>
+                <Label className="text-amber-800">Content</Label>
+                <div className="p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200 max-h-60 overflow-y-auto">
+                  <div className="prose prose-orange max-w-none">
+                    <ReactMarkdown>{selectedPost.content}</ReactMarkdown>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end space-x-2">
@@ -540,18 +612,9 @@ export default function CalendarPage() {
                     setIsEventDialogOpen(false)
                     setSelectedPost(null)
                   }}
+                  className="border-orange-200 hover:bg-orange-50"
                 >
                   Close
-                </Button>
-                <Button
-                  onClick={() => {
-                    setEditingPost(selectedPost)
-                    setIsEventDialogOpen(false)
-                    setIsDialogOpen(true)
-                    setSelectedPost(null)
-                  }}
-                >
-                  Edit Post
                 </Button>
               </div>
             </div>

@@ -73,18 +73,18 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Sparkles className="h-8 w-8 text-purple-600" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <Sparkles className="h-8 w-8 text-orange-600" />
+            <span className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               ContentCraft AI
             </span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Let's Set Up Your Content Strategy</h1>
-          <p className="text-gray-600">Help us understand your needs to create the perfect AI assistant for you</p>
+          <h1 className="text-3xl font-bold mb-2 text-amber-900">Let's Set Up Your Content Strategy</h1>
+          <p className="text-amber-700">Help us understand your needs to create the perfect AI assistant for you</p>
         </div>
 
         {/* Progress Steps */}
@@ -98,25 +98,23 @@ export default function OnboardingPage() {
               return (
                 <div key={step.id} className="flex items-center">
                   <div
-                    className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
-                      isActive
-                        ? "border-purple-600 bg-purple-600 text-white"
-                        : isCompleted
-                          ? "border-green-600 bg-green-600 text-white"
-                          : "border-gray-300 bg-white text-gray-400"
-                    }`}
+                    className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${isActive
+                      ? "border-orange-600 bg-orange-600 text-white"
+                      : isCompleted
+                        ? "border-green-600 bg-green-600 text-white"
+                        : "border-orange-200 bg-white text-amber-600"
+                      }`}
                   >
                     <Icon className="h-5 w-5" />
                   </div>
                   <span
-                    className={`ml-2 text-sm font-medium ${
-                      isActive ? "text-purple-600" : isCompleted ? "text-green-600" : "text-gray-400"
-                    }`}
+                    className={`ml-2 text-sm font-medium ${isActive ? "text-orange-600" : isCompleted ? "text-green-600" : "text-amber-600"
+                      }`}
                   >
                     {step.title}
                   </span>
                   {index < steps.length - 1 && (
-                    <div className={`w-8 h-0.5 mx-4 ${isCompleted ? "bg-green-600" : "bg-gray-300"}`} />
+                    <div className={`w-8 h-0.5 mx-4 ${isCompleted ? "bg-green-600" : "bg-orange-200"}`} />
                   )}
                 </div>
               )
@@ -125,14 +123,14 @@ export default function OnboardingPage() {
         </div>
 
         {/* Step Content */}
-        <Card className="border-0 shadow-lg">
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm border-orange-200/60">
           <CardHeader>
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-2xl text-amber-900">
               {currentStep === 1 && "Tell us about yourself"}
               {currentStep === 2 && "What are your content goals?"}
               {currentStep === 3 && "Set your preferences"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-amber-700">
               {currentStep === 1 && "Basic information to personalize your experience"}
               {currentStep === 2 && "Define your content strategy and objectives"}
               {currentStep === 3 && "Customize how AI generates content for you"}
@@ -143,28 +141,30 @@ export default function OnboardingPage() {
             {currentStep === 1 && (
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name *</Label>
+                  <Label htmlFor="name" className="text-amber-800">Full Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     placeholder="Enter your full name"
+                    className="border-orange-200"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
+                  <Label htmlFor="email" className="text-amber-800">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="Enter your email"
+                    className="border-orange-200"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="userType">I am a... *</Label>
+                  <Label htmlFor="userType" className="text-amber-800">I am a... *</Label>
                   <Select value={formData.userType} onValueChange={(value) => handleInputChange("userType", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-orange-200">
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -176,18 +176,19 @@ export default function OnboardingPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company/Brand Name</Label>
+                  <Label htmlFor="company" className="text-amber-800">Company/Brand Name</Label>
                   <Input
                     id="company"
                     value={formData.company}
                     onChange={(e) => handleInputChange("company", e.target.value)}
                     placeholder="Optional"
+                    className="border-orange-200"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="industry">Industry/Niche</Label>
+                  <Label htmlFor="industry" className="text-amber-800">Industry/Niche</Label>
                   <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-orange-200">
                       <SelectValue placeholder="Select your industry" />
                     </SelectTrigger>
                     <SelectContent>
@@ -212,7 +213,7 @@ export default function OnboardingPage() {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <Label>Which platforms do you want to create content for? *</Label>
+                  <Label className="text-amber-800">Which platforms do you want to create content for? *</Label>
                   <div className="flex flex-wrap gap-3">
                     {["LinkedIn", "Twitter/X", "Both"].map((platform) => (
                       <div key={platform} className="flex items-center space-x-2">
@@ -220,8 +221,9 @@ export default function OnboardingPage() {
                           id={platform}
                           checked={formData.platforms.includes(platform)}
                           onCheckedChange={(checked) => handleArrayChange("platforms", platform, checked as boolean)}
+                          className="border-orange-300"
                         />
-                        <Label htmlFor={platform} className="cursor-pointer">
+                        <Label htmlFor={platform} className="cursor-pointer text-amber-900">
                           {platform}
                         </Label>
                       </div>
@@ -230,7 +232,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label>What type of content do you want to create? *</Label>
+                  <Label className="text-amber-800">What type of content do you want to create? *</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {[
                       "Thought Leadership",
@@ -248,8 +250,9 @@ export default function OnboardingPage() {
                           id={type}
                           checked={formData.contentTypes.includes(type)}
                           onCheckedChange={(checked) => handleArrayChange("contentTypes", type, checked as boolean)}
+                          className="border-orange-300"
                         />
-                        <Label htmlFor={type} className="cursor-pointer text-sm">
+                        <Label htmlFor={type} className="cursor-pointer text-sm text-amber-900">
                           {type}
                         </Label>
                       </div>
@@ -258,34 +261,36 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="targetAudience">Describe your target audience *</Label>
+                  <Label htmlFor="targetAudience" className="text-amber-800">Describe your target audience *</Label>
                   <Textarea
                     id="targetAudience"
                     value={formData.targetAudience}
                     onChange={(e) => handleInputChange("targetAudience", e.target.value)}
                     placeholder="e.g., Tech professionals, startup founders, marketing managers..."
                     rows={3}
+                    className="border-orange-200"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="contentGoals">What are your main content goals? *</Label>
+                  <Label htmlFor="contentGoals" className="text-amber-800">What are your main content goals? *</Label>
                   <Textarea
                     id="contentGoals"
                     value={formData.contentGoals}
                     onChange={(e) => handleInputChange("contentGoals", e.target.value)}
                     placeholder="e.g., Build thought leadership, increase brand awareness, generate leads..."
                     rows={3}
+                    className="border-orange-200"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="postFrequency">How often do you want to post? *</Label>
+                  <Label htmlFor="postFrequency" className="text-amber-800">How often do you want to post? *</Label>
                   <Select
                     value={formData.postFrequency}
                     onValueChange={(value) => handleInputChange("postFrequency", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="border-orange-200">
                       <SelectValue placeholder="Select posting frequency" />
                     </SelectTrigger>
                     <SelectContent>
@@ -304,9 +309,9 @@ export default function OnboardingPage() {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="toneStyle">What's your preferred tone and style? *</Label>
+                  <Label htmlFor="toneStyle" className="text-amber-800">What's your preferred tone and style? *</Label>
                   <Select value={formData.toneStyle} onValueChange={(value) => handleInputChange("toneStyle", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-orange-200">
                       <SelectValue placeholder="Select your tone" />
                     </SelectTrigger>
                     <SelectContent>
@@ -321,21 +326,22 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="pastPosts">Share some of your past posts (optional)</Label>
+                  <Label htmlFor="pastPosts" className="text-amber-800">Share some of your past posts (optional)</Label>
                   <Textarea
                     id="pastPosts"
                     value={formData.pastPosts}
                     onChange={(e) => handleInputChange("pastPosts", e.target.value)}
                     placeholder="Paste 2-3 of your recent posts here so AI can learn your writing style..."
                     rows={6}
+                    className="border-orange-200"
                   />
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-amber-600">
                     This helps AI understand your unique voice and writing patterns
                   </p>
                 </div>
 
                 <div className="space-y-3">
-                  <Label>What topics do you frequently discuss?</Label>
+                  <Label className="text-amber-800">What topics do you frequently discuss?</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {[
                       "Leadership",
@@ -356,8 +362,9 @@ export default function OnboardingPage() {
                           id={topic}
                           checked={formData.topics.includes(topic)}
                           onCheckedChange={(checked) => handleArrayChange("topics", topic, checked as boolean)}
+                          className="border-orange-300"
                         />
-                        <Label htmlFor={topic} className="cursor-pointer text-sm">
+                        <Label htmlFor={topic} className="cursor-pointer text-sm text-amber-900">
                           {topic}
                         </Label>
                       </div>
@@ -366,12 +373,12 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="contentLength">Preferred content length *</Label>
+                  <Label htmlFor="contentLength" className="text-amber-800">Preferred content length *</Label>
                   <Select
                     value={formData.contentLength}
                     onValueChange={(value) => handleInputChange("contentLength", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="border-orange-200">
                       <SelectValue placeholder="Select content length" />
                     </SelectTrigger>
                     <SelectContent>
@@ -386,19 +393,19 @@ export default function OnboardingPage() {
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-6 border-t">
+            <div className="flex justify-between pt-6 border-t border-orange-200">
               <Button
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center bg-transparent"
+                className="flex items-center bg-transparent border-orange-200 hover:bg-orange-50"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 h-4 w-4 text-amber-900" />
                 Previous
               </Button>
               <Button
                 onClick={nextStep}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center"
+                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl flex items-center"
               >
                 {currentStep === 3 ? "Complete Setup" : "Next"}
                 <ArrowRight className="ml-2 h-4 w-4" />
