@@ -1,52 +1,27 @@
-# =========================
-# Root
-# =========================
-node_modules/
-.env
-.DS_Store
-*.log
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+.pnpm-debug.log*
 
-# Ignore build outputs
-dist/
-build/
+# env files
+.env*
 
-# Ignore OS-specific files
-Thumbs.db
+# vercel
+.vercel
 
-# Ignore IDE/editor settings
-.vscode/
-.idea/
-
-# =========================
-# Server (backend)
-# =========================
-/server/node_modules/
-/server/.env
-/server/dist
-/server/package-lock.json
-/server/yarn.lock
-
-# =========================
-# Client (frontend - React)
-# =========================
-/client/node_modules/
-/client/.env
-/client/build/
-/client/package-lock.json
-/client/yarn.lock
-
-# Ignore coverage reports (if using testing)
-coverage/
-
-# Ignore ESLint cache
-.eslintcache
-
-# Optional: Ignore uploads or temporary files
-uploads/
-temp/
-tmp/
+# typescript
+*.tsbuildinfo
+next-env.d.ts
